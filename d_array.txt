@@ -1,0 +1,109 @@
+//
+//  d_array.c
+//  DIoBO
+//
+//  Created by Leonardo Iandiorio on 01/09/16.
+//  Copyright © 2016 Leonardo Iandiorio. All rights reserved.
+//
+
+#include "d_array.h"
+
+
+array_t * array_init(){
+    array_t * array = malloc(sizeof(array_t));
+    array->words = malloc(sizeof(char**));
+    array->len = 1;
+    array->n = 0;
+    return array;
+}
+
+void array_destroy(array_t * array){
+    for(int i = 0;i < array->n; ++i){
+        free(array->words[i]);
+    }
+    free(array);
+    array->len = array->n = 0;
+    
+}
+
+void array_add(array_t * array, char * word){
+    if(array->n >= array->len){
+        array->len = (array->len) * 2;
+        array->words = (char **) realloc(array->words, sizeof(char *) * array->len);
+    }
+    array->words[array->n] = malloc(sizeof(char) * (strlen(word) + 1));
+    strcpy(array->words[array->n], word);
+    array->n = array->n + 1;
+}
+
+void print_array(array_t * array){
+    printf("DC");
+    for(int i = 0; i < array->n; ++i){
+        printf("%s\n", (array->words)[i]);
+    }
+}
+
+int binary_search(array_t * array, char *target){
+    int bottom= 0;
+    int mid;
+    int top = (int)(array->n) - 1;
+    
+    while(bottom <= top){
+        mid = (bottom + top)/2;
+        if (strcmp(array->words[mid], target) == 0){
+//            printf("%s found at location %d.\n", target, mid+1);
+            return 0;
+        } else if (strcmp(array->words[mid], target) > 0){
+            top = mid - 1;
+        } else if (strcmp(array->words[mid], target) < 0){
+            bottom = mid + 1;
+        }
+    }
+    return 1;
+}
+
+
+int main(){
+    array_t * array = array_init();
+//    array_add(array, "pd");
+//    array_add(array, "ciao");
+//    array_add(array, "afsd");
+//    array_add(array, "db");
+//    array_add(array, "dc");
+//    
+//    print_array(array);
+//    
+//    array_destroy(array);
+
+    FILE * fp;
+    fp = fopen("words.txt", "r");
+    char c[50];
+    while((fscanf(fp, "%s", c)) > 0){
+        array_add(array, c);
+    }
+//    print_array(array);
+    fclose(fp);
+    
+    FILE * fp2;
+    FILE * fp3;
+    fp2 = fopen("text.txt", "r");
+    fp3 = fopen("out.txt", "w");
+    char p[50];
+    while((fscanf(fp, "%49[a-zA-Z]", p)) > 0){
+        for(int i = 0; p[i]; i++){
+            p[i] = tolower(p[i]);
+        }
+        if(binary_search(array, p) == 1){
+            fputs(p, fp3);
+            fputs("\n",fp3);
+        }
+        if (fscanf(fp, "%49[^a-zA-Z]", p) != 1){
+            printf("lol");
+        }
+    }
+    fclose(fp2);
+    fclose(fp3);
+    array_destroy(array);
+
+
+}
